@@ -14,7 +14,8 @@
 #include <assert.h>
 #include <string.h>
 #include <pthread.h>
-
+// #include <direct.h>
+// This library is not available on macOS
 
 #endif /* main_h */
 

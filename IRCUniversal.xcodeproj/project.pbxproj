@@ -10,6 +10,7 @@
 		BA3C242D21D3397E00262B5B /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = BA3C242521D3370800262B5B /* main.c */; };
 		BA3C243021D3401A00262B5B /* server.c in Sources */ = {isa = PBXBuildFile; fileRef = BA3C242F21D3401A00262B5B /* server.c */; };
 		BA3C243321D3402700262B5B /* client.c in Sources */ = {isa = PBXBuildFile; fileRef = BA3C243221D3402700262B5B /* client.c */; };
+		BA3C243621D40E2E00262B5B /* errorCheck.c in Sources */ = {isa = PBXBuildFile; fileRef = BA3C243521D40E2E00262B5B /* errorCheck.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -32,6 +33,8 @@
 		BA3C242F21D3401A00262B5B /* server.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = server.c; sourceTree = "<group>"; };
 		BA3C243121D3402700262B5B /* client.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = client.h; sourceTree = "<group>"; };
 		BA3C243221D3402700262B5B /* client.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client.c; sourceTree = "<group>"; };
+		BA3C243421D40E2E00262B5B /* errorCheck.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = errorCheck.h; sourceTree = "<group>"; };
+		BA3C243521D40E2E00262B5B /* errorCheck.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = errorCheck.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +73,8 @@
 				BA3C242F21D3401A00262B5B /* server.c */,
 				BA3C243121D3402700262B5B /* client.h */,
 				BA3C243221D3402700262B5B /* client.c */,
+				BA3C243421D40E2E00262B5B /* errorCheck.h */,
+				BA3C243521D40E2E00262B5B /* errorCheck.c */,
 			);
 			path = IRCUniversal;
 			sourceTree = "<group>";
@@ -132,6 +137,7 @@
 			files = (
 				BA3C243021D3401A00262B5B /* server.c in Sources */,
 				BA3C242D21D3397E00262B5B /* main.c in Sources */,
+				BA3C243621D40E2E00262B5B /* errorCheck.c in Sources */,
 				BA3C243321D3402700262B5B /* client.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
