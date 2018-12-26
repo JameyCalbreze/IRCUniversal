@@ -13,6 +13,13 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <pthread.h>
 
 
 #endif /* main_h */
+
+#define CLIENT 0
+#define SERVER 1
+#define NO_MODE (-1)
+
+

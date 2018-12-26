@@ -7,11 +7,20 @@
 //
 
 #include "main.h"
+#include "server.h"
+#include "client.h"
 
 int main(int argc, const char * argv[]) {
     // Mode 0 means that the program should run as a client.
-    int mode = 0; int port = -1;
+    int mode = NO_MODE; int port = -1;
     const char* hostname;
+    
+    if (!argc%2) {
+        fprintf(stderr,"Usage\n--mode [client/server]\n");
+        fprintf(stderr,"--host [host address]\n");
+        fprintf(stderr,"--port [port num]");
+        return -1;
+    }
     
     //===================================================//
     // Mode selection based on arguments
@@ -19,19 +28,30 @@ int main(int argc, const char * argv[]) {
     // complain about their crashing executables
     int i;
     for(i = 1; i < argc; i++) {
-        if (strncmp(argv[i],"--mode",6)){
+        if ( strncmp(argv[i],"--mode",6) == 0){
             assert(argv[++i] != NULL);
-            if( strncmp("client",argv[i],6) ) {
-                mode = 0;
-            } else if( strncmp("server",argv[i],6) ) {
-                mode = 1;
+            if( strncmp("client",argv[i],6) == 0) {
+                mode = CLIENT;
+            } else if( strncmp("server",argv[i],6) == 0) {
+                mode = SERVER;
             }
-        } else if ( strncmp("--host",argv[i],6) ) {
+        } else if ( strncmp("--host",argv[i],6) == 0) {
             assert(argv[++i] != NULL);
             hostname = argv[i];
-        } else if ( strncmp("--port",argv[i],6) ) {
+        } else if ( strncmp("--port",argv[i],6) == 0) {
             assert(argv[++i] != NULL);
             port = atoi(argv[i]);
         }
+    }
+    
+    if (mode == CLIENT) {
+        return client_main(hostname,port);
+    }
+    else if (mode == SERVER) {
+        return server_main(hostname,port);
+    }
+    else {
+        fprintf(stderr,"A valid mode was not supplied\n");
+        return NO_MODE;
     }
 }

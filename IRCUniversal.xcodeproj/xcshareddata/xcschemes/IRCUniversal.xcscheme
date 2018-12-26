@@ -63,7 +63,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "--mode server --port 8080 --hostname localhost"
+            argument = "--mode client --port 8080 --host localhost"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
