@@ -49,9 +49,19 @@ void checkAcceptError(int status)
 }
 
 void checkWaitError(int pid) {
-    if (status < 0)
+    if (pid < 0)
     {
         fprintf(stderr,"WaitPid failed with error [%s]\n",strerror(errno));
+        exit(-1);
+    }
+    return;
+}
+
+void checkConnectErr(int status, int line)
+{
+    if(status != 0)
+    {
+        fprintf(stderr,"Connect failed with error [%s]\nOn line %d\n",strerror(errno),line);
         exit(-1);
     }
     return;

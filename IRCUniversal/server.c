@@ -21,31 +21,12 @@ struct clientThreads
     
 } Cthr;
 
-void setHintsForAddress6(struct addrinfo* hints)
-{
-    hints->ai_family = PF_INET6;
-    hints->ai_socktype = SOCK_STREAM;
-    hints->ai_protocol = IPPROTO_TCP;
-    hints->ai_flags = 0;
-    hints->ai_addrlen = 0;
-    hints->ai_addr = NULL;
-    hints->ai_canonname = NULL;
-    hints->ai_next = NULL;
-    return;
-}
-
-
 int server_main(const char* hostname,int port)
 {
     // We're going to fork and the fork will hold the infinite loop.
     // This way we can send a commands into the server.
     
-    // The first thing we need to do is to get the IP v6 address from the hostname
-    struct addrinfo* determine;
-    struct addrinfo hints;
-    setHintsForAddress6(&hints);
-    int status = getaddrinfo(hostname,NULL,&hints,&determine);
-    checkGetAddrErr(status);
+    int status;
     
     
     // Socket to be used for client connection
