@@ -18,5 +18,4 @@ void setHintsForAddress(struct addrinfo* hints)
     hints->ai_addr = NULL;
     hints->ai_canonname = NULL;
     hints->ai_next = NULL;
-    return;
 }
