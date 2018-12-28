@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BA244D8A21D5CC5600B66CD8 /* networkHelp.c in Sources */ = {isa = PBXBuildFile; fileRef = BA244D8921D5CC5600B66CD8 /* networkHelp.c */; };
 		BA3C242D21D3397E00262B5B /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = BA3C242521D3370800262B5B /* main.c */; };
 		BA3C243021D3401A00262B5B /* server.c in Sources */ = {isa = PBXBuildFile; fileRef = BA3C242F21D3401A00262B5B /* server.c */; };
 		BA3C243321D3402700262B5B /* client.c in Sources */ = {isa = PBXBuildFile; fileRef = BA3C243221D3402700262B5B /* client.c */; };
@@ -37,6 +38,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BA244D8821D5CC5600B66CD8 /* networkHelp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = networkHelp.h; sourceTree = "<group>"; };
+		BA244D8921D5CC5600B66CD8 /* networkHelp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = networkHelp.c; sourceTree = "<group>"; };
 		BA3C242221D3370800262B5B /* IRCUniversal */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = IRCUniversal; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA3C242521D3370800262B5B /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		BA3C242C21D3377900262B5B /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
@@ -78,6 +81,8 @@
 		BA3C242421D3370800262B5B /* IRCUniversal */ = {
 			isa = PBXGroup;
 			children = (
+				BA244D8821D5CC5600B66CD8 /* networkHelp.h */,
+				BA244D8921D5CC5600B66CD8 /* networkHelp.c */,
 				BA3C242521D3370800262B5B /* main.c */,
 				BA3C242C21D3377900262B5B /* main.h */,
 				BA3C242E21D3401A00262B5B /* server.h */,
@@ -150,6 +155,7 @@
 				BA3C243021D3401A00262B5B /* server.c in Sources */,
 				BA3C242D21D3397E00262B5B /* main.c in Sources */,
 				BA3C243621D40E2E00262B5B /* errorCheck.c in Sources */,
+				BA244D8A21D5CC5600B66CD8 /* networkHelp.c in Sources */,
 				BA3C243321D3402700262B5B /* client.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

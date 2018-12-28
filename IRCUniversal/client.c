@@ -8,26 +8,14 @@
 
 #include "client.h"
 #include "errorCheck.h"
-
-void setHintsForAddress6_client(struct addrinfo* hints)
-{
-    hints->ai_family = PF_UNSPEC;
-    hints->ai_socktype = SOCK_STREAM;
-    hints->ai_protocol = IPPROTO_TCP;
-    hints->ai_flags = 0;
-    hints->ai_addrlen = 0;
-    hints->ai_addr = NULL;
-    hints->ai_canonname = NULL;
-    hints->ai_next = NULL;
-    return;
-}
+#include "networkHelp.h"
 
 int client_main(const char* hostname, int port, int preferred)
 {
     // The first thing we need to do is to get the IP v6 address from the hostname
     struct addrinfo* determine;
     struct addrinfo hints;
-    setHintsForAddress6_client(&hints);
+    setHintsForAddress(&hints);
     char portStr[7];
     sprintf(portStr,"%d",port);
     int status = getaddrinfo(hostname,portStr,&hints,&determine);
