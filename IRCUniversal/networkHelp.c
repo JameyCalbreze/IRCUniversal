@@ -8,7 +8,7 @@
 
 #include "networkHelp.h"
 
-void setHintsForAddress(struct addrinfo* hints)
+void setHintsForAddress(struct addrinfo *hints)
 {
     hints->ai_family = PF_UNSPEC;
     hints->ai_socktype = SOCK_STREAM;

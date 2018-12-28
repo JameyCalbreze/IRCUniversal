@@ -21,4 +21,4 @@
 
 #endif /* networkHelp_h */
 
-void setHintsForAddress(struct addrinfo* hints);
+void setHintsForAddress(struct addrinfo *hints);
