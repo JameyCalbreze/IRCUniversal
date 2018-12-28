@@ -26,3 +26,4 @@ void checkListenError(int status);
 void checkAcceptError(int status);
 void checkWaitError(int pid);
 void checkConnectErr(int status, int line);
+void checkFinAddr(int* determine);

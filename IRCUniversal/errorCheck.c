@@ -67,3 +67,14 @@ void checkConnectErr(int status, int line)
     }
     return;
 }
+
+void checkFinAddr(int* determine)
+{
+    // Check final address config
+    if(determine == NULL){
+        fprintf(stderr,"No compatible address information determined\n");
+        fprintf(stderr,"error code [%s]\n",strerror(errno));
+        exit(-1);
+    }
+    return;
+}

@@ -49,6 +49,7 @@ int server_main(const char* hostname,int port, int preferred)
         if (determine->ai_family == preferred && determine->ai_protocol == IPPROTO_TCP) break;
         determine = determine->ai_next;
     }
+    checkFinAddr((int*)determine);
     
     status = bind(socketID,determine->ai_addr,determine->ai_addrlen);
     checkBindError(status);
