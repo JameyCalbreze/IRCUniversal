@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
@@ -22,4 +23,4 @@
 
 #endif /* client_h */
 
-int client_main(const char* hostname,int port);
+int client_main(const char* hostname,int port,int preferred);

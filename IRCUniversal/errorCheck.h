@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <pthread.h>
@@ -19,7 +20,7 @@
 
 #endif /* error_h */
 
-void checkGetAddrErr(int status);
+void checkGetAddrErr(int status, int line);
 void checkBindError(int status);
 void checkListenError(int status);
 void checkAcceptError(int status);

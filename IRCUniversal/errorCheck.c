@@ -8,11 +8,12 @@
 
 #include "errorCheck.h"
 
-void checkGetAddrErr(int status)
+void checkGetAddrErr(int status, int line)
 {
     if (status != 0)
     {
         fprintf(stderr,"GetAddrInfo failed with error code [%s]\n",strerror(errno));
+        fprintf(stderr,"Line #: %d\n",line);
         exit(-1);
     }
     return;

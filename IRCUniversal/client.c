@@ -9,9 +9,9 @@
 #include "client.h"
 #include "errorCheck.h"
 
-void setHintsForAddress6(struct addrinfo* hints)
+void setHintsForAddress6_client(struct addrinfo* hints)
 {
-    hints->ai_family = PF_INET6;
+    hints->ai_family = PF_UNSPEC;
     hints->ai_socktype = SOCK_STREAM;
     hints->ai_protocol = IPPROTO_TCP;
     hints->ai_flags = 0;
@@ -22,24 +22,27 @@ void setHintsForAddress6(struct addrinfo* hints)
     return;
 }
 
-int client_main(const char* hostname, int port)
+int client_main(const char* hostname, int port, int preferred)
 {
     // The first thing we need to do is to get the IP v6 address from the hostname
     struct addrinfo* determine;
     struct addrinfo hints;
-    setHintsForAddress6(&hints);
-    int status = getaddrinfo(hostname,NULL,&hints,&determine);
-    checkGetAddrErr(status);
+    setHintsForAddress6_client(&hints);
+    char portStr[7];
+    sprintf(portStr,"%d",port);
+    int status = getaddrinfo(hostname,portStr,&hints,&determine);
+    checkGetAddrErr(status,__LINE__);
     
     // Create the socket
-    int socketID = socket(PF_INET6,SOCK_STREAM,0);
-    struct sockaddr_in6 srv;
-    srv.sin6_family = AF_INET6;
-    srv.sin6_port = htonl(port);
-    // This should add the IPv6 information into this data structure.
-    memcpy(&srv.sin6_addr,determine->ai_addr,determine->ai_addrlen);
+    int socketID = socket(preferred,SOCK_STREAM,0);
     
-    status = connect(socketID,(struct sockaddr*)&srv,sizeof(srv));
+    // Now that we've made the code IPvX we can just select the propper protocol using a for loop
+    while (determine != NULL) {
+        if (determine->ai_family == preferred && determine->ai_protocol == IPPROTO_TCP) break;
+        determine = determine->ai_next;
+    }
+    
+    status = connect(socketID,determine->ai_addr,determine->ai_addrlen);
     checkConnectErr(status,__LINE__);
     
     //struct hostent *

@@ -12,7 +12,7 @@
 
 int main(int argc, const char * argv[]) {
     // Mode 0 means that the program should run as a client.
-    int mode = NO_MODE; int port = -1;
+    int mode = NO_MODE, port = -1, preferred = PF_INET6;
     const char* hostname;
     
     if (!argc%2) {
@@ -45,10 +45,10 @@ int main(int argc, const char * argv[]) {
     }
     
     if (mode == CLIENT) {
-        return client_main(hostname,port);
+        return client_main(hostname,port,preferred);
     }
     else if (mode == SERVER) {
-        return server_main(hostname,port);
+        return server_main(hostname,port,preferred);
     }
     else {
         fprintf(stderr,"A valid mode was not supplied\n");

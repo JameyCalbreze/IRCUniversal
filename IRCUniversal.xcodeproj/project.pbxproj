@@ -11,6 +11,7 @@
 		BA3C243021D3401A00262B5B /* server.c in Sources */ = {isa = PBXBuildFile; fileRef = BA3C242F21D3401A00262B5B /* server.c */; };
 		BA3C243321D3402700262B5B /* client.c in Sources */ = {isa = PBXBuildFile; fileRef = BA3C243221D3402700262B5B /* client.c */; };
 		BA3C243621D40E2E00262B5B /* errorCheck.c in Sources */ = {isa = PBXBuildFile; fileRef = BA3C243521D40E2E00262B5B /* errorCheck.c */; };
+		BAF2804221D5BF76008C009E /* IRCUniversal in CopyFiles */ = {isa = PBXBuildFile; fileRef = BA3C242221D3370800262B5B /* IRCUniversal */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -22,6 +23,16 @@
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 1;
+		};
+		BAF2804121D5BF63008C009E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /Users/jamey/Development/CProjects/ICRUniversal/build;
+			dstSubfolderSpec = 0;
+			files = (
+				BAF2804221D5BF76008C009E /* IRCUniversal in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -89,6 +100,7 @@
 				BA3C241E21D3370800262B5B /* Sources */,
 				BA3C241F21D3370800262B5B /* Frameworks */,
 				BA3C242021D3370800262B5B /* CopyFiles */,
+				BAF2804121D5BF63008C009E /* CopyFiles */,
 			);
 			buildRules = (
 			);
