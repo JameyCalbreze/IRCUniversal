@@ -28,7 +28,7 @@
 		BAF2804121D5BF63008C009E /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = /Users/jamey/Development/CProjects/ICRUniversal/build;
+			dstPath = /Users/jamey/Development/CProjects/IRCUniversal/build;
 			dstSubfolderSpec = 0;
 			files = (
 				BAF2804221D5BF76008C009E /* IRCUniversal in CopyFiles */,
@@ -40,6 +40,7 @@
 /* Begin PBXFileReference section */
 		BA244D8821D5CC5600B66CD8 /* networkHelp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = networkHelp.h; sourceTree = "<group>"; };
 		BA244D8921D5CC5600B66CD8 /* networkHelp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = networkHelp.c; sourceTree = "<group>"; };
+		BA244D8B21D5E03900B66CD8 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; name = Makefile; path = IRCUniversal/Makefile; sourceTree = "<group>"; };
 		BA3C242221D3370800262B5B /* IRCUniversal */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = IRCUniversal; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA3C242521D3370800262B5B /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		BA3C242C21D3377900262B5B /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
@@ -65,6 +66,7 @@
 		BA3C241921D3370800262B5B = {
 			isa = PBXGroup;
 			children = (
+				BA244D8B21D5E03900B66CD8 /* Makefile */,
 				BA3C242421D3370800262B5B /* IRCUniversal */,
 				BA3C242321D3370800262B5B /* Products */,
 			);
