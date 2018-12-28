@@ -85,8 +85,8 @@
 			children = (
 				BA244D8821D5CC5600B66CD8 /* networkHelp.h */,
 				BA244D8921D5CC5600B66CD8 /* networkHelp.c */,
-				BA3C242521D3370800262B5B /* main.c */,
 				BA3C242C21D3377900262B5B /* main.h */,
+				BA3C242521D3370800262B5B /* main.c */,
 				BA3C242E21D3401A00262B5B /* server.h */,
 				BA3C242F21D3401A00262B5B /* server.c */,
 				BA3C243121D3402700262B5B /* client.h */,
