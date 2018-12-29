@@ -23,3 +23,7 @@
 #endif /* server_h */
 
 int server_main(const char* hostname,int port,int preferred);
+
+struct client;
+struct message;
+struct chatRoom;

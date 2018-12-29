@@ -78,3 +78,12 @@ void checkFinAddr(int* determine)
     }
     return;
 }
+
+void checkSocketErr(int socket)
+{
+    if(socket <= 0) {
+        fprintf(stderr,"Socket creation failed with error code [%s]\n",strerror(errno));
+        exit(-1);
+    }
+    return;
+}

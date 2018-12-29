@@ -10,19 +10,48 @@
 #include "errorCheck.h"
 #include "networkHelp.h"
 
-struct clientMessages
-{
-    char* user;
-    char* message;
-} Cmsg;
+// We only need a mutex on the pointer as the message will be saved in the struct
+// This will have to allocate memory
+struct message {
+    int msgLen;
+    char* msg;
+    pthread_mutex_t next;
+    struct message* nextMsg;
+};
 
-struct clientThreads
-{
+struct client {
     pthread_t tid;
+    char* usrName;
     
-} Cthr;
+    // Which chatroom are we connected to?
+    struct chatRoom* curRoom;
+    
+    // When a client sends a message it will have to add the message to the linked lists of messages
+    // When the server wants to send the message to each of the clients it will need to remove messages from the pointer
+    pthread_mutex_t addRmMsg;
+    struct message* msgs;
+};
 
-
+struct chatRoom {
+    int roomlen;
+    // Boolean to state if the server should save the chatroom config
+    pthread_mutex_t perm;
+    int permanent;
+    char *roomName;
+    
+    // The first room will ALWAYS be the main room.
+    pthread_mutex_t addRmRooms;
+    struct chatRoom* next;
+    struct chatRoom* first;
+    
+    // Who is connected to the room
+    pthread_mutex_t editUsr;
+    struct client* users;
+    
+    // For future developement
+    pthread_mutex_t editAdmin;
+    struct client* admins;
+};
 
 int server_main(const char* hostname,int port, int preferred)
 {
@@ -43,6 +72,7 @@ int server_main(const char* hostname,int port, int preferred)
     
     // Socket to be used for client connection
     int socketID = socket(preferred,SOCK_STREAM,0);
+    checkSocketErr(socketID);
     
     // Now that we've made the code IPvX we can just select the propper protocol using a for loop
     while (determine != NULL) {
