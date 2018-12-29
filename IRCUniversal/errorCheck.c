@@ -87,3 +87,13 @@ void checkSocketErr(int socket)
     }
     return;
 }
+
+void checkMutexErr(int status)
+{
+    if(status != 0)
+    {
+        fprintf(stderr,"Mutex creation failed with error [%s]\n",strerror(errno));
+        exit(-1);
+    }
+    return;
+}

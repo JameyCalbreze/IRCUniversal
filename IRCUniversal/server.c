@@ -20,6 +20,7 @@ struct message {
 };
 
 struct client {
+    // Each client will run in it's own thread.
     pthread_t tid;
     char* usrName;
     
@@ -52,6 +53,48 @@ struct chatRoom {
     pthread_mutex_t editAdmin;
     struct client* admins;
 };
+
+struct roomManagerData
+{
+    // The managers will have their own id's.
+    pthread_t tid;
+    
+    // As the roomManager must be loaded before the user manager we're going to set a conditional
+    // variable in here that will be activated only once.
+    pthread_mutex_t init;
+    pthread_cond_t initCond;
+    
+    // What else should these managers keep track of?
+    // The first chatRoom in this linked list will be the main room
+    pthread_mutex_t editRoomList;
+    pthread_rwlock_t editRoomRW;
+    struct chatRoom* chatRooms;
+    
+    
+} RMData;
+
+struct userManager
+{
+    // This will have it's own id
+    pthread_t tid;
+    
+    // Array of connected users
+    pthread_mutex_t editClientList;
+    pthread_rwlock_t editClientRW;
+    struct client* clients;
+    
+    
+};
+
+void* chatRoomMngr(void* data)
+{
+    return NULL;
+}
+
+void* usrMngr(void* data)
+{
+    return NULL;
+}
 
 int server_main(const char* hostname,int port, int preferred)
 {
@@ -87,7 +130,14 @@ int server_main(const char* hostname,int port, int preferred)
     status = listen(socketID,10);
     checkListenError(status);
     
-    // struct in6_addr host;
+    // The new section that will accept the user connections. This will initialize the two threads.
+    // One for the chatroom manager and another for the user manager
+    pthread_mutex_t chatRoomInit;
+    status = pthread_mutex_init(&chatRoomInit,NULL);
+    checkMutexErr(status);
+    pthread_cond_t chatRoomInitCond;
+    status = pthread_mutex_init(&chatRoomInitCond,NULL);
+    checkMutexErr(status);
     
     // First let's make the infinite loop
     while (1)

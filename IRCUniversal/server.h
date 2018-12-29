@@ -23,6 +23,8 @@
 #endif /* server_h */
 
 int server_main(const char* hostname,int port,int preferred);
+void* usrMngr(void* data);
+void* chatRoomMngr(void* data);
 
 struct client;
 struct message;
