@@ -97,3 +97,23 @@ void checkMutexErr(int status)
     }
     return;
 }
+
+void checkMemError(void* pointer)
+{
+    if(pointer == NULL)
+    {
+        fprintf(stderr,"Memory allocation failed [%s]\n",strerror(errno));
+        exit(-1);
+    }
+    return;
+}
+
+void checkThreadError(int status)
+{
+    if(status != 0)
+    {
+        fprintf(stderr,"Thread creation failed [%s]\n",strerror(errno));
+        exit(-1);
+    }
+    return;
+}

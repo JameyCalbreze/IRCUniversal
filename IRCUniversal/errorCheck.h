@@ -28,4 +28,6 @@ void checkWaitError(int pid);
 void checkConnectErr(int status, int line);
 void checkFinAddr(int* determine);
 void checkSocketErr(int socket);
-void chechMutexErr(int status);
+void checkMutexErr(int status);
+void checkMemError(void* pointer);
+void checkThreadError(int status);

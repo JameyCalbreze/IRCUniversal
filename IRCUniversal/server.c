@@ -10,84 +10,17 @@
 #include "errorCheck.h"
 #include "networkHelp.h"
 
-// We only need a mutex on the pointer as the message will be saved in the struct
-// This will have to allocate memory
-struct message {
-    int msgLen;
-    char* msg;
-    pthread_mutex_t next;
-    struct message* nextMsg;
-};
-
-struct client {
-    // Each client will run in it's own thread.
-    pthread_t tid;
-    char* usrName;
-    
-    // Which chatroom are we connected to?
-    struct chatRoom* curRoom;
-    
-    // When a client sends a message it will have to add the message to the linked lists of messages
-    // When the server wants to send the message to each of the clients it will need to remove messages from the pointer
-    pthread_mutex_t addRmMsg;
-    struct message* msgs;
-};
-
-struct chatRoom {
-    int roomlen;
-    // Boolean to state if the server should save the chatroom config
-    pthread_mutex_t perm;
-    int permanent;
-    char *roomName;
-    
-    // The first room will ALWAYS be the main room.
-    pthread_mutex_t addRmRooms;
-    struct chatRoom* next;
-    struct chatRoom* first;
-    
-    // Who is connected to the room
-    pthread_mutex_t editUsr;
-    struct client* users;
-    
-    // For future developement
-    pthread_mutex_t editAdmin;
-    struct client* admins;
-};
-
-struct roomManagerData
-{
-    // The managers will have their own id's.
-    pthread_t tid;
-    
-    // As the roomManager must be loaded before the user manager we're going to set a conditional
-    // variable in here that will be activated only once.
-    pthread_mutex_t init;
-    pthread_cond_t initCond;
-    
-    // What else should these managers keep track of?
-    // The first chatRoom in this linked list will be the main room
-    pthread_mutex_t editRoomList;
-    pthread_rwlock_t editRoomRW;
-    struct chatRoom* chatRooms;
-    
-    
-} RMData;
-
-struct userManager
-{
-    // This will have it's own id
-    pthread_t tid;
-    
-    // Array of connected users
-    pthread_mutex_t editClientList;
-    pthread_rwlock_t editClientRW;
-    struct client* clients;
-    
-    
-};
-
 void* chatRoomMngr(void* data)
 {
+    // We'll create the read write lock for our room list
+    int status;
+    pthread_rwlock_t rwEditRooms;
+    status = pthread_rwlock_init(&rwEditRooms,NULL);
+    checkMutexErr(status);
+    
+    // This will be the clean up section
+    status = pthread_rwlock_destroy(&rwEditRooms);
+    checkMutexErr(status);
     return NULL;
 }
 
@@ -136,7 +69,21 @@ int server_main(const char* hostname,int port, int preferred)
     status = pthread_mutex_init(&chatRoomInit,NULL);
     checkMutexErr(status);
     pthread_cond_t chatRoomInitCond;
-    status = pthread_mutex_init(&chatRoomInitCond,NULL);
+    status = pthread_cond_init(&chatRoomInitCond,NULL);
+    checkMutexErr(status);
+    
+    // Initialize the room manager data structure
+    RMData* rmThreadData = malloc(sizeof(RMData));
+    checkMemError((void*)rmThreadData);
+    rmThreadData->init = &chatRoomInit;
+    rmThreadData->initCond = &chatRoomInitCond;
+    status = pthread_create(&rmThreadData->tid,NULL,chatRoomMngr,(void*)rmThreadData);
+    checkThreadError(status);
+    
+    // This will be the end of the function where we have to clean up everything that we've done
+    status = pthread_mutex_destroy(&chatRoomInit);
+    checkMutexErr(status);
+    status = pthread_cond_destroy(&chatRoomInitCond);
     checkMutexErr(status);
     
     // First let's make the infinite loop
