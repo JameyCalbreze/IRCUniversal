@@ -79,12 +79,9 @@ typedef struct roomManagerData {
     pthread_mutex_t *init;
     pthread_cond_t *initCond;
     
-    // What else should these managers keep track of?
-    // The first chatRoom in this linked list will be the main room
-    //pthread_mutex_t editRoomList;
-    //pthread_rwlock_t editRoomRW;
-    //struct chatRoom* chatRooms;
-    // I don't actually need the above as it can be created in the manager itself as it starts
+    // The reason these will be initialized outside the thread is so that the user manager may have access to these
+    pthread_rwlock_t *accessRoomList;
+    struct chatRoom* chatRooms;
 } RMData;
 
 struct userManager {

@@ -12,15 +12,13 @@
 
 void* chatRoomMngr(void* data)
 {
-    // We'll create the read write lock for our room list
+    // Cast our data pointer out so that we have access to the mutex we passed
+    RMData* waitMutex = (RMData*)data;
     int status;
-    pthread_rwlock_t rwEditRooms;
-    status = pthread_rwlock_init(&rwEditRooms,NULL);
-    checkMutexErr(status);
     
-    // This will be the clean up section
-    status = pthread_rwlock_destroy(&rwEditRooms);
-    checkMutexErr(status);
+    // Now our initialization step should be complete be this point so we'll anounce that the main thread may continue;
+    pthread_cond_broadcast(waitMutex->initCond);
+    
     return NULL;
 }
 
@@ -66,10 +64,13 @@ int server_main(const char* hostname,int port, int preferred)
     // The new section that will accept the user connections. This will initialize the two threads.
     // One for the chatroom manager and another for the user manager
     pthread_mutex_t chatRoomInit;
+    pthread_cond_t chatRoomInitCond;
+    pthread_rwlock_t accessChatRooms;
     status = pthread_mutex_init(&chatRoomInit,NULL);
     checkMutexErr(status);
-    pthread_cond_t chatRoomInitCond;
     status = pthread_cond_init(&chatRoomInitCond,NULL);
+    checkMutexErr(status);
+    status = pthread_rwlock_init(&accessChatRooms, NULL);
     checkMutexErr(status);
     
     // Initialize the room manager data structure
@@ -77,44 +78,52 @@ int server_main(const char* hostname,int port, int preferred)
     checkMemError((void*)rmThreadData);
     rmThreadData->init = &chatRoomInit;
     rmThreadData->initCond = &chatRoomInitCond;
+    rmThreadData->accessRoomList = &accessChatRooms;
     status = pthread_create(&rmThreadData->tid,NULL,chatRoomMngr,(void*)rmThreadData);
     checkThreadError(status);
     
-    // This will be the end of the function where we have to clean up everything that we've done
+    // Now we have to wait for the chatroom manager to finish initializing we'll unlock the mutex immediately
+    // The mutex is only required in order to prevent the user manager from adding users to a chatroom that doesn't exist;
+    pthread_cond_wait(&chatRoomInitCond, &chatRoomInit);
+    pthread_mutex_unlock(&chatRoomInit);
+    
+    // These mutexes will be destroyed once the chatRoomManager has finished executing as there is no longer any need for them.
+    status = pthread_cond_destroy(&chatRoomInitCond);
+    checkMutexErr(status);
     status = pthread_mutex_destroy(&chatRoomInit);
     checkMutexErr(status);
-    status = pthread_cond_destroy(&chatRoomInitCond);
+    status = pthread_rwlock_destroy(&accessChatRooms);
     checkMutexErr(status);
     
     // First let's make the infinite loop
-    while (1)
-    {
-        struct sockaddr_in client;
-        socklen_t clientSize;
-        int chatSocket = accept(socketID,(struct sockaddr*)&client,&clientSize);
-        checkAcceptError(chatSocket);
-        fprintf(stdout,"Client accepted on socket [%d]\n",chatSocket);
-        
-        // Once we get to this point we need to start multi threading the program
-        // We'll hold off on the threads for now. We need to see if we can get a connection to work
-        // between the server and the client.
-        pid_t child = fork();
-        if (child == 0) {
-            close(socketID);
-            close(chatSocket);
-            return -1;
-        } else {
-            fprintf(stdout,"Child :%d created\n",child);
-            close(chatSocket);
-            status = 0;
-            pid_t deadChild;
-            do {
-                deadChild = waitpid(0,&status,WNOHANG);checkWaitError(deadChild);
-                if (deadChild > 0) {
-                    fprintf(stdout,"Reaped %d\n",deadChild);
-                }
-            } while(deadChild > 0);
-        }
-    }
+//    while (1)
+//    {
+//        struct sockaddr_in client;
+//        socklen_t clientSize;
+//        int chatSocket = accept(socketID,(struct sockaddr*)&client,&clientSize);
+//        checkAcceptError(chatSocket);
+//        fprintf(stdout,"Client accepted on socket [%d]\n",chatSocket);
+//
+//        // Once we get to this point we need to start multi threading the program
+//        // We'll hold off on the threads for now. We need to see if we can get a connection to work
+//        // between the server and the client.
+//        pid_t child = fork();
+//        if (child == 0) {
+//            close(socketID);
+//            close(chatSocket);
+//            return -1;
+//        } else {
+//            fprintf(stdout,"Child :%d created\n",child);
+//            close(chatSocket);
+//            status = 0;
+//            pid_t deadChild;
+//            do {
+//                deadChild = waitpid(0,&status,WNOHANG);checkWaitError(deadChild);
+//                if (deadChild > 0) {
+//                    fprintf(stdout,"Reaped %d\n",deadChild);
+//                }
+//            } while(deadChild > 0);
+//        }
+//    }
     return 0;
 }
