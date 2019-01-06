@@ -20,11 +20,18 @@
 #include <pthread.h>
 #include <arpa/inet.h>
 
+#define PERM 1
+#define TEMP 0
+
+// Connection drop codes
+#define CONNECTED 0
+#define ERROR_DROP (-1)
+#define CLEAN_DROP 1
+
 #endif /* server_h */
 
 int server_main(const char* hostname,int port,int preferred);
 void* usrMngr(void* data);
-void* chatRoomMngr(void* data);
 
 // We only need a mutex on the pointer as the message will be saved in the struct
 // This will have to allocate memory
@@ -35,10 +42,13 @@ struct message {
     struct message* nextMsg;
 };
 
-struct client {
+typedef struct client {
     // Each client will run in it's own thread.
     pthread_t tid;
     char* usrName;
+    
+    // We need the socket the client is communicating through
+    int socketID;
     
     // Which chatroom are we connected to?
     struct chatRoom* curRoom;
@@ -47,51 +57,33 @@ struct client {
     // When the server wants to send the message to each of the clients it will need to remove messages from the pointer
     pthread_mutex_t addRmMsg;
     struct message* msgs;
-};
+}CData;
 
 struct chatRoom {
-    int roomlen;
     // Boolean to state if the server should save the chatroom config
     pthread_mutex_t perm;
     int permanent;
     char *roomName;
     
     // The first room will ALWAYS be the main room.
-    pthread_mutex_t addRmRooms;
+    pthread_rwlock_t *accessRooms;
     struct chatRoom* next;
-    struct chatRoom* first;
+    struct chatRoom* mainRoom;
     
     // Who is connected to the room
-    pthread_mutex_t editUsr;
-    struct client* users;
+    pthread_mutex_t editClients;
+    struct client* clients;
+    int numClients;
+    
+    // Who is connected to the server
+    pthread_mutex_t *editOnline;
+    struct client* online;
+    int numOnline;
     
     // For future developement
     pthread_mutex_t editAdmin;
     struct client* admins;
-};
-
-typedef struct roomManagerData {
-    // The managers will have their own id's.
-    pthread_t tid;
+    int numAdmins;
     
-    // As the roomManager must be loaded before the user manager we're going to set a conditional
-    // variable in here that will be activated only once.
-    pthread_mutex_t *init;
-    pthread_cond_t *initCond;
-    
-    // The reason these will be initialized outside the thread is so that the user manager may have access to these
-    pthread_rwlock_t *accessRoomList;
-    struct chatRoom* chatRooms;
-} RMData;
-
-struct userManager {
-    // This will have it's own id
-    pthread_t tid;
-    
-    // Array of connected users
-    pthread_mutex_t editClientList;
-    pthread_rwlock_t editClientRW;
-    struct client* clients;
-    
-    
+    // Perhaps I can have this abstracted to allow for user defined user types at some point.
 };

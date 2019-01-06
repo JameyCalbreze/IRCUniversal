@@ -9,21 +9,64 @@
 #include "server.h"
 #include "errorCheck.h"
 #include "networkHelp.h"
+#include "communication.h"
 
-void* chatRoomMngr(void* data)
-{
-    // Cast our data pointer out so that we have access to the mutex we passed
-    RMData* waitMutex = (RMData*)data;
-    int status;
-    
-    // Now our initialization step should be complete be this point so we'll anounce that the main thread may continue;
-    pthread_cond_broadcast(waitMutex->initCond);
-    
-    return NULL;
-}
-
+// These threads are initialized as detached. There needs to be a way to join all of these threads
 void* usrMngr(void* data)
 {
+    // this will be the main thread for the users
+    CData* userData = (CData*)data;
+    int socketID = userData->socketID,status;
+    ssize_t checkSocket; // will be used to ensure that the socket between the user and the client is still valid.
+    
+    // We're going to use an int to mark if the client has been dropped from the server or not
+    int connectionStatus = CONNECTED;
+    
+    // Initialize the mutex used to wake up this client thread
+    pthread_mutex_t self;
+    pthread_cond_t wakeSelf;
+    status = pthread_mutex_init(&self,NULL);
+    checkMutexErr(status);
+    status = pthread_cond_init(&wakeSelf,NULL);
+    checkMutexErr(status);
+    
+    // The above will be ignored for now. Now we need to get the two child threads out the gate.
+    // First we'll initialize the sending thread.
+    obd *sendData = malloc(sizeof(obd));
+    sendData->socketID = socketID;
+    sendData->messages = NULL;
+    
+    status = pthread_mutex_init(&sendData->queueSend,NULL);
+    checkMutexErr(status);
+    status = pthread_cond_init(&sendData->fireOff,NULL);
+    checkMutexErr(status);
+    
+    status = pthread_create(&sendData->tid,NULL,sendController,(void*)sendData);
+    checkThreadError(status);
+    
+    // Second we'll make a receiving thread
+    ibd *recvData = malloc(sizeof(ibd));
+    recvData->socketID = socketID;
+    recvData->queueMutex = &userData->addRmMsg;
+    recvData->wakeClient = &wakeSelf;
+    
+    status = pthread_create(&recvData->tid,NULL,recvController,(void*)recvData);
+    checkThreadError(status);
+    
+    // Clean up for the client
+    status = pthread_cancel(sendData->tid);
+    checkThreadError(status);
+    status = pthread_cancel(recvData->tid);
+    checkThreadError(status);
+    status = pthread_join(sendData->tid,NULL);
+    checkThreadError(status);
+    status = pthread_join(recvData->tid,NULL);
+    checkThreadError(status);
+    
+    // test to see if we haven't dropped the client
+    checkSocket = send(socketID,"/test\n",6,0);
+    
+    
     return NULL;
 }
 
@@ -61,69 +104,72 @@ int server_main(const char* hostname,int port, int preferred)
     status = listen(socketID,10);
     checkListenError(status);
     
-    // The new section that will accept the user connections. This will initialize the two threads.
-    // One for the chatroom manager and another for the user manager
-    pthread_mutex_t chatRoomInit;
-    pthread_cond_t chatRoomInitCond;
+    // We need to initialize the main chatroom
+    struct chatRoom* mainRoom = malloc(sizeof(struct chatRoom));
+    mainRoom->mainRoom = mainRoom;
+    mainRoom->next = mainRoom;
+    mainRoom->numAdmins = 0;
+    mainRoom->numClients = 0;
+    mainRoom->clients = NULL;
+    mainRoom->admins = NULL;
+    mainRoom->permanent = PERM;
+    mainRoom->roomName = "Main";
+    
+    // We're going to share this edit chatrooms mutex. If we're going to manage multiple chat rooms it would only make sense
     pthread_rwlock_t accessChatRooms;
-    status = pthread_mutex_init(&chatRoomInit,NULL);
-    checkMutexErr(status);
-    status = pthread_cond_init(&chatRoomInitCond,NULL);
-    checkMutexErr(status);
     status = pthread_rwlock_init(&accessChatRooms, NULL);
     checkMutexErr(status);
+    mainRoom->accessRooms = &accessChatRooms;
     
-    // Initialize the room manager data structure
-    RMData* rmThreadData = malloc(sizeof(RMData));
-    checkMemError((void*)rmThreadData);
-    rmThreadData->init = &chatRoomInit;
-    rmThreadData->initCond = &chatRoomInitCond;
-    rmThreadData->accessRoomList = &accessChatRooms;
-    status = pthread_create(&rmThreadData->tid,NULL,chatRoomMngr,(void*)rmThreadData);
-    checkThreadError(status);
-    
-    // Now we have to wait for the chatroom manager to finish initializing we'll unlock the mutex immediately
-    // The mutex is only required in order to prevent the user manager from adding users to a chatroom that doesn't exist;
-    pthread_cond_wait(&chatRoomInitCond, &chatRoomInit);
-    pthread_mutex_unlock(&chatRoomInit);
-    
-    // These mutexes will be destroyed once the chatRoomManager has finished executing as there is no longer any need for them.
-    status = pthread_cond_destroy(&chatRoomInitCond);
+    // This mutex will be used to edit the master list of clients connected to the server
+    pthread_mutex_t editOnline;
+    status = pthread_mutex_init(&editOnline,NULL);
     checkMutexErr(status);
-    status = pthread_mutex_destroy(&chatRoomInit);
+    
+    status = pthread_mutex_init(&mainRoom->perm,NULL);
     checkMutexErr(status);
-    status = pthread_rwlock_destroy(&accessChatRooms);
+    status = pthread_mutex_init(&mainRoom->editAdmin,NULL);
+    checkMutexErr(status);
+    status = pthread_mutex_init(&mainRoom->editClients,NULL);
     checkMutexErr(status);
     
     // First let's make the infinite loop
-//    while (1)
-//    {
-//        struct sockaddr_in client;
-//        socklen_t clientSize;
-//        int chatSocket = accept(socketID,(struct sockaddr*)&client,&clientSize);
-//        checkAcceptError(chatSocket);
-//        fprintf(stdout,"Client accepted on socket [%d]\n",chatSocket);
-//
-//        // Once we get to this point we need to start multi threading the program
-//        // We'll hold off on the threads for now. We need to see if we can get a connection to work
-//        // between the server and the client.
-//        pid_t child = fork();
-//        if (child == 0) {
-//            close(socketID);
-//            close(chatSocket);
-//            return -1;
-//        } else {
-//            fprintf(stdout,"Child :%d created\n",child);
-//            close(chatSocket);
-//            status = 0;
-//            pid_t deadChild;
-//            do {
-//                deadChild = waitpid(0,&status,WNOHANG);checkWaitError(deadChild);
-//                if (deadChild > 0) {
-//                    fprintf(stdout,"Reaped %d\n",deadChild);
-//                }
-//            } while(deadChild > 0);
-//        }
-//    }
+    while (1)
+    {
+        // Sockets will be closed by the client threads
+        struct sockaddr_in client;
+        socklen_t clientSize;
+        int chatSocket = accept(socketID,(struct sockaddr*)&client,&clientSize);
+        checkAcceptError(chatSocket);
+        fprintf(stdout,"Client accepted on socket [%d]\n",chatSocket);
+
+        // Now we're going to implement this in multiple threads
+        CData* userThread = malloc(sizeof(CData));
+        userThread->socketID = chatSocket;
+        status = pthread_mutex_init(&userThread->addRmMsg,NULL);
+        checkMutexErr(status);
+        userThread->curRoom = mainRoom;
+        userThread->msgs = NULL;
+        userThread->usrName = NULL;
+        pthread_attr_t clientAttributes;
+        status = pthread_attr_init(&clientAttributes);
+        checkThreadError(status);
+        pthread_attr_setdetachstate(&clientAttributes, PTHREAD_CREATE_DETACHED);
+        pthread_create(&userThread->tid, &clientAttributes, usrMngr, (void*)userThread);
+        pthread_attr_destroy(&clientAttributes);
+    }
+    
+    // for when the functionality to exit the server is implemented
+    status = pthread_rwlock_destroy(&accessChatRooms);
+    checkMutexErr(status);
+    status = pthread_mutex_destroy(&mainRoom->editAdmin);
+    checkMutexErr(status);
+    status = pthread_mutex_destroy(&mainRoom->editClients);
+    checkMutexErr(status);
+    status = pthread_mutex_destroy(&mainRoom->perm);
+    checkMutexErr(status);
+    
+    free(mainRoom);
+    
     return 0;
 }

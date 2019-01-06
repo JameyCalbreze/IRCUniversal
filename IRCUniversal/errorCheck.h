@@ -31,3 +31,4 @@ void checkSocketErr(int socket);
 void checkMutexErr(int status);
 void checkMemError(void* pointer);
 void checkThreadError(int status);
+int checkSendError(ssize_t sent,int socketID);

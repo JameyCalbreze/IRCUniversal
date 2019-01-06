@@ -34,6 +34,9 @@ int client_main(const char* hostname, int port, int preferred)
     status = connect(socketID,determine->ai_addr,determine->ai_addrlen);
     checkConnectErr(status,__LINE__);
     
+    int i = 0;
+    while (1) {i++;};
+    
     //struct hostent *
     return 0;
 }

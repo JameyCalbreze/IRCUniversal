@@ -117,3 +117,14 @@ void checkThreadError(int status)
     }
     return;
 }
+
+int checkSendError(ssize_t sent,int socketID)
+{
+    if(sent < 0)
+    {
+        fprintf(stderr,"Send over socket failed [%s]\n",strerror(errno));
+        fprintf(stderr,"Connection over socket: %d will be dropped\n",socketID);
+        return -1;
+    }
+    return 0;
+}
