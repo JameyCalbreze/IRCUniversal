@@ -26,15 +26,44 @@ void* sendController(void* data)
     //        }
     //    }
     obd* sendData = (obd*)data;
-    int i = 0;
-    while (1) {i++;};
+    pthread_cond_wait(&sendData->fireOff, &sendData->queueSend);
     return NULL;
 }
 
 void* recvController(void* data)
 {
     ibd* recvData = (ibd*)data;
-    int i = 0;
-    while (1) {i++;};
+    ssize_t check;
+    char *buffer = "test\n";
+    check = recv(recvData->socketID, buffer, (size_t)strlen(buffer), 0);
     return NULL;
+}
+
+void cleanSendData(obd* sendData)
+{
+    int status;
+    status = pthread_mutex_destroy(&sendData->queueSend); checkMutexErr(status);
+    status = pthread_cond_destroy(&sendData->fireOff); checkMutexErr(status);
+    clearMsgChain(sendData->messages);
+    free(sendData);
+    return;
+}
+
+void cleanRecvData(ibd* recvData)
+{
+    clearMsgChain(recvData->working);
+    free(recvData);
+    return;
+}
+
+void clearMsgChain(struct message* curMsg)
+{
+    struct message* nxtMsg;
+    while (curMsg != NULL) {
+        free(curMsg->msg);
+        nxtMsg = curMsg->nextMsg;
+        free(curMsg);
+        curMsg = nxtMsg;
+    }
+    return;
 }

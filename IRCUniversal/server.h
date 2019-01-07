@@ -38,7 +38,6 @@ void* usrMngr(void* data);
 struct message {
     int msgLen;
     char* msg;
-    pthread_mutex_t next;
     struct message* nextMsg;
 };
 
