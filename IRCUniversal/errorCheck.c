@@ -128,3 +128,12 @@ int checkSendError(ssize_t sent,int socketID)
     }
     return 0;
 }
+
+void checkCommandExecution(int status,char* messageSupplied)
+{
+    if(status != 0)
+    {
+        fprintf(stderr,"Message [%s] does not contain a valid command\n",messageSupplied);
+    }
+    return;
+}

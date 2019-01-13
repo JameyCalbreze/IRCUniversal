@@ -56,6 +56,9 @@ typedef struct client {
     // When the server wants to send the message to each of the clients it will need to remove messages from the pointer
     pthread_mutex_t addRmMsg;
     struct message* msgs;
+    
+    pthread_mutex_t addRmCmd;
+    struct message* cmds;
 }CData;
 
 struct chatRoom {

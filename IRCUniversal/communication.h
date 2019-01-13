@@ -18,7 +18,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-
 #endif /* communication_h */
 
 void* sendController(void* data);
@@ -31,6 +30,8 @@ typedef struct outboundData {
     struct message* messages;
     pthread_cond_t fireOff;
     int socketID;
+    pthread_mutex_t *editStatus;
+    int *connectionStatus;
 } obd;
 
 typedef struct inboundData {
@@ -42,6 +43,8 @@ typedef struct inboundData {
     struct message *working;
     // How we wake up our main client thread
     pthread_cond_t *wakeClient;
+    pthread_mutex_t *editStatus;
+    int *connectionStatus;
 } ibd;
 
 void cleanSendData(obd* sendData);

@@ -12,21 +12,55 @@
 
 void* sendController(void* data)
 {
-    // Send the welcome message
-    // This shouldn't occur until the send thread has been initialized
-    //    char *tempMessage = "Please login with /login [user]\n";
-    //    unsigned long lenMessage = strlen(tempMessage);
-    //    ssize_t sent = 0;
-    //    while (lenMessage - sent){
-    //        sent += send(socketID, tempMessage, lenMessage - sent, 0);
-    //        // If we get an error here we have to handle it as a bad connection can not be responsible for bringing the server down.
-    //        status = checkSendError(sent,socketID);
-    //        if(status){
-    //            connectionStatus = ERROR_DROP;
-    //        }
-    //    }
+    // Cast the pointer to the out bound data structure
     obd* sendData = (obd*)data;
-    pthread_cond_wait(&sendData->fireOff, &sendData->queueSend);
+    int status;
+    
+    while (1) {
+        // First thing we're going to do is wait for the client thread to wake us up
+        pthread_cond_wait(&sendData->fireOff,&sendData->queueSend);
+        // Now we're going to need a way to check if the send thread needs to terminate.
+        pthread_mutex_lock(sendData->editStatus);
+        int checkConnectionStatus = *sendData->connectionStatus;
+        pthread_mutex_unlock(sendData->editStatus);
+        if(checkConnectionStatus == CONNECTED) {
+            // Let's take the messages out of the shared data and keep them on a temporary pointer
+            struct message* tempHold = sendData->messages;
+            sendData->messages = NULL;
+            pthread_mutex_unlock(&sendData->queueSend);
+            while(tempHold != NULL) {
+                struct message *curMsg = tempHold;
+                int sent = 0;
+                size_t leftToSend = curMsg->msgLen;
+                while (leftToSend) {
+                    ssize_t checkSend = send(sendData->socketID,curMsg->msg + sent,leftToSend,0);
+                    status = checkSendError(checkSend, sendData->socketID);
+                    if(status) {
+                        // This will only occur on a broken socket
+                        // Clear the messages we removed from the queue and then set the connection status in the main thread
+                        // The conditions required to exit the while loops will be set
+                        clearMsgChain(tempHold);
+                        tempHold = NULL;
+                        pthread_mutex_lock(sendData->editStatus);
+                        *sendData->connectionStatus = ERROR_DROP;
+                        pthread_mutex_unlock(sendData->editStatus);
+                        leftToSend = 0;
+                    } else {
+                        // Adjust the data position
+                        sent += checkSend;
+                        leftToSend -= checkSend;
+                    }
+                }
+            }
+        } else {
+            pthread_mutex_unlock(&sendData->queueSend);
+            int *test = &checkConnectionStatus;
+            pthread_exit((void*)test);
+        }
+        
+    }
+    
+    //pthread_cond_wait(&sendData->fireOff, &sendData->queueSend);
     return NULL;
 }
 

@@ -11,6 +11,28 @@
 #include "networkHelp.h"
 #include "communication.h"
 
+// Now we need to execute the command
+// Each command will be programmed here. It would be nice if I could load a configuration file that would allow me to save these
+// and edit them from the terminal once the server/client connection has been established.
+int executeCommand(struct message *command)
+{
+    // here we will check for commands through a set of if statements
+    int validCommand = -1;
+    // Should be expanded to notify which user attempted to use the command
+    if(strncmp(command->msg,"/test\0",6) == 1) {
+        fprintf(stdout,"Test command detected and confirmed\n");
+        validCommand = 0;
+    }
+    
+    return validCommand;
+}
+
+// Some method to check for commands. For now it will only be used for the / character
+int checkForCommand(struct message* first)
+{
+    return first->msg[0] == '/';
+}
+
 // These threads are initialized as detached. There needs to be a way to join all of these threads
 void* usrMngr(void* data)
 {
@@ -33,10 +55,8 @@ void* usrMngr(void* data)
     obd *sendData = malloc(sizeof(obd));
     sendData->socketID = socketID;
     sendData->messages = NULL;
-    
     status = pthread_mutex_init(&sendData->queueSend,NULL); checkMutexErr(status);
     status = pthread_cond_init(&sendData->fireOff,NULL); checkMutexErr(status);
-    
     status = pthread_create(&sendData->tid,NULL,sendController,(void*)sendData); checkThreadError(status);
     
     // Second we'll make a receiving thread
@@ -44,17 +64,54 @@ void* usrMngr(void* data)
     recvData->socketID = socketID;
     recvData->queueMutex = &userData->addRmMsg;
     recvData->wakeClient = &wakeSelf;
-    
+    recvData->editStatus = &self;
     status = pthread_create(&recvData->tid,NULL,recvController,(void*)recvData); checkThreadError(status);
+    
+    // This will be the command interpreter for the server
+    // The send and receive threads will be able to change this status. Once that happens they will check back to the
+    // shared variable. If the status is not CONNECTED then the child threads will exit on their own
+    do {
+        // Begin the sequence
+        // First check for new messages
+        pthread_mutex_lock(&userData->addRmMsg);
+        if(userData->msgs != NULL) {
+            pthread_mutex_lock(&sendData->queueSend);
+            sendData->messages = userData->msgs;
+            pthread_mutex_unlock(&sendData->queueSend);
+            userData->msgs = NULL;
+            pthread_cond_signal_thread_np(&sendData->fireOff, sendData->tid);
+        }
+        pthread_mutex_unlock(&userData->addRmMsg);
+        
+        // Second We'll check commands
+        struct message* tempHold = NULL;
+        pthread_mutex_lock(&userData->addRmCmd);
+        if(userData->cmds != NULL) {
+            tempHold = userData->cmds;
+            userData->cmds = NULL;
+        }
+        pthread_mutex_unlock(&userData->addRmCmd);
+        // If we've received a command we will now interpret it
+        if(tempHold != NULL){
+            int isCommand = checkForCommand(tempHold);
+            if(isCommand) {
+                // Place holder
+                status = executeCommand(tempHold);
+                checkCommandExecution(status,tempHold->msg);
+            }
+        }
+        
+        // This means that the receive thread will be the thread breaking out of the blocking behavior of the recv command
+        pthread_cond_wait(&wakeSelf,&self);
+     } while (connectionStatus == CONNECTED);
     
     // Clean up for the client
     status = pthread_kill(sendData->tid,SIGTERM); checkThreadError(status);
     status = pthread_join(sendData->tid,NULL); checkThreadError(status);
     status = pthread_kill(recvData->tid,SIGTERM); checkThreadError(status);
     status = pthread_join(recvData->tid,NULL); checkThreadError(status);
-    
-    // test to see if we haven't dropped the client
-    checkSocket = send(socketID,"/test\n",6,0);
+    cleanSendData(sendData);
+    cleanRecvData(recvData);
     
     
     return NULL;

@@ -18,7 +18,7 @@ int client_main(const char* hostname, int port, int preferred)
     struct addrinfo* determine;
     struct addrinfo hints;
     setHintsForAddress(&hints);
-    char portStr[7];
+    char portStr[8];
     sprintf(portStr,"%d",port);
     int status = getaddrinfo(hostname,portStr,&hints,&determine); checkGetAddrErr(status,__LINE__);
     
