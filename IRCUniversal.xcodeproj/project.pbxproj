@@ -8,11 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		BA244D8A21D5CC5600B66CD8 /* networkHelp.c in Sources */ = {isa = PBXBuildFile; fileRef = BA244D8921D5CC5600B66CD8 /* networkHelp.c */; };
-		BA27A11421E140540017479A /* communication.c in Sources */ = {isa = PBXBuildFile; fileRef = BA27A11321E140540017479A /* communication.c */; };
+		BA27A11421E140540017479A /* communication_server.c in Sources */ = {isa = PBXBuildFile; fileRef = BA27A11321E140540017479A /* communication_server.c */; };
 		BA3C242D21D3397E00262B5B /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = BA3C242521D3370800262B5B /* main.c */; };
 		BA3C243021D3401A00262B5B /* server.c in Sources */ = {isa = PBXBuildFile; fileRef = BA3C242F21D3401A00262B5B /* server.c */; };
 		BA3C243321D3402700262B5B /* client.c in Sources */ = {isa = PBXBuildFile; fileRef = BA3C243221D3402700262B5B /* client.c */; };
 		BA3C243621D40E2E00262B5B /* errorCheck.c in Sources */ = {isa = PBXBuildFile; fileRef = BA3C243521D40E2E00262B5B /* errorCheck.c */; };
+		BAA2168821ED3A5200A98755 /* communication_client.c in Sources */ = {isa = PBXBuildFile; fileRef = BAA2168721ED3A5200A98755 /* communication_client.c */; };
 		BAF2804221D5BF76008C009E /* IRCUniversal in CopyFiles */ = {isa = PBXBuildFile; fileRef = BA3C242221D3370800262B5B /* IRCUniversal */; };
 /* End PBXBuildFile section */
 
@@ -42,8 +43,8 @@
 		BA244D8821D5CC5600B66CD8 /* networkHelp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = networkHelp.h; sourceTree = "<group>"; };
 		BA244D8921D5CC5600B66CD8 /* networkHelp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = networkHelp.c; sourceTree = "<group>"; };
 		BA244D8B21D5E03900B66CD8 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; name = Makefile; path = IRCUniversal/Makefile; sourceTree = "<group>"; };
-		BA27A11221E140540017479A /* communication.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = communication.h; sourceTree = "<group>"; };
-		BA27A11321E140540017479A /* communication.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = communication.c; sourceTree = "<group>"; };
+		BA27A11221E140540017479A /* communication_server.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = communication_server.h; sourceTree = "<group>"; };
+		BA27A11321E140540017479A /* communication_server.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = communication_server.c; sourceTree = "<group>"; };
 		BA3C242221D3370800262B5B /* IRCUniversal */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = IRCUniversal; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA3C242521D3370800262B5B /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		BA3C242C21D3377900262B5B /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
@@ -53,6 +54,8 @@
 		BA3C243221D3402700262B5B /* client.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client.c; sourceTree = "<group>"; };
 		BA3C243421D40E2E00262B5B /* errorCheck.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = errorCheck.h; sourceTree = "<group>"; };
 		BA3C243521D40E2E00262B5B /* errorCheck.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = errorCheck.c; sourceTree = "<group>"; };
+		BAA2168621ED3A5200A98755 /* communication_client.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = communication_client.h; sourceTree = "<group>"; };
+		BAA2168721ED3A5200A98755 /* communication_client.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = communication_client.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,8 +99,10 @@
 				BA3C243221D3402700262B5B /* client.c */,
 				BA3C243421D40E2E00262B5B /* errorCheck.h */,
 				BA3C243521D40E2E00262B5B /* errorCheck.c */,
-				BA27A11221E140540017479A /* communication.h */,
-				BA27A11321E140540017479A /* communication.c */,
+				BA27A11221E140540017479A /* communication_server.h */,
+				BA27A11321E140540017479A /* communication_server.c */,
+				BAA2168621ED3A5200A98755 /* communication_client.h */,
+				BAA2168721ED3A5200A98755 /* communication_client.c */,
 			);
 			path = IRCUniversal;
 			sourceTree = "<group>";
@@ -161,8 +166,9 @@
 			files = (
 				BA3C243021D3401A00262B5B /* server.c in Sources */,
 				BA3C242D21D3397E00262B5B /* main.c in Sources */,
-				BA27A11421E140540017479A /* communication.c in Sources */,
+				BA27A11421E140540017479A /* communication_server.c in Sources */,
 				BA3C243621D40E2E00262B5B /* errorCheck.c in Sources */,
+				BAA2168821ED3A5200A98755 /* communication_client.c in Sources */,
 				BA244D8A21D5CC5600B66CD8 /* networkHelp.c in Sources */,
 				BA3C243321D3402700262B5B /* client.c in Sources */,
 			);

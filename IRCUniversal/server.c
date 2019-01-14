@@ -9,7 +9,7 @@
 #include "server.h"
 #include "errorCheck.h"
 #include "networkHelp.h"
-#include "communication.h"
+#include "communication_server.h"
 
 // Now we need to execute the command
 // Each command will be programmed here. It would be nice if I could load a configuration file that would allow me to save these
@@ -28,7 +28,7 @@ int executeCommand(struct message *command)
 }
 
 // Some method to check for commands. For now it will only be used for the / character
-int checkForCommand(struct message* first)
+int checkForCommand(struct message *first)
 {
     return first->msg[0] == '/';
 }
@@ -55,16 +55,22 @@ void* usrMngr(void* data)
     obd *sendData = malloc(sizeof(obd));
     sendData->socketID = socketID;
     sendData->messages = NULL;
+    sendData->editStatus = &self;
+    sendData->connectionStatus = &connectionStatus;
     status = pthread_mutex_init(&sendData->queueSend,NULL); checkMutexErr(status);
     status = pthread_cond_init(&sendData->fireOff,NULL); checkMutexErr(status);
-    status = pthread_create(&sendData->tid,NULL,sendController,(void*)sendData); checkThreadError(status);
     
     // Second we'll make a receiving thread
     ibd *recvData = malloc(sizeof(ibd));
     recvData->socketID = socketID;
     recvData->queueMutex = &userData->addRmMsg;
     recvData->wakeClient = &wakeSelf;
+    recvData->working = NULL;
     recvData->editStatus = &self;
+    recvData->connectionStatus = &connectionStatus;
+    
+    // Create threads
+    status = pthread_create(&sendData->tid,NULL,sendController,(void*)sendData); checkThreadError(status);
     status = pthread_create(&recvData->tid,NULL,recvController,(void*)recvData); checkThreadError(status);
     
     // This will be the command interpreter for the server
@@ -79,7 +85,7 @@ void* usrMngr(void* data)
             sendData->messages = userData->msgs;
             pthread_mutex_unlock(&sendData->queueSend);
             userData->msgs = NULL;
-            pthread_cond_signal_thread_np(&sendData->fireOff, sendData->tid);
+            pthread_cond_signal(&sendData->fireOff);
         }
         pthread_mutex_unlock(&userData->addRmMsg);
         
@@ -103,25 +109,23 @@ void* usrMngr(void* data)
         
         // This means that the receive thread will be the thread breaking out of the blocking behavior of the recv command
         pthread_cond_wait(&wakeSelf,&self);
-     } while (connectionStatus == CONNECTED);
+    } while (connectionStatus == CONNECTED);
+    
+    // If we close the client first we won't have to worry about how the threads die as they should both be unblocked at a minimum
+    close(socketID);
     
     // Clean up for the client
-    status = pthread_kill(sendData->tid,SIGTERM); checkThreadError(status);
+    pthread_cond_signal(&sendData->fireOff);
     status = pthread_join(sendData->tid,NULL); checkThreadError(status);
-    status = pthread_kill(recvData->tid,SIGTERM); checkThreadError(status);
     status = pthread_join(recvData->tid,NULL); checkThreadError(status);
     cleanSendData(sendData);
     cleanRecvData(recvData);
-    
     
     return NULL;
 }
 
 int server_main(const char* hostname,int port, int preferred)
 {
-    // We're going to fork and the fork will hold the infinite loop.
-    // This way we can send a commands into the server.
-    
     int status;
     
     // The first thing we need to do is to get the IP v6 address from the hostname
@@ -150,7 +154,7 @@ int server_main(const char* hostname,int port, int preferred)
     // We need to initialize the main chatroom
     struct chatRoom* mainRoom = malloc(sizeof(struct chatRoom));
     mainRoom->mainRoom = mainRoom;
-    mainRoom->next = mainRoom;
+    mainRoom->next = NULL;
     mainRoom->numAdmins = 0;
     mainRoom->numClients = 0;
     mainRoom->clients = NULL;
@@ -172,6 +176,7 @@ int server_main(const char* hostname,int port, int preferred)
     status = pthread_mutex_init(&mainRoom->editClients,NULL); checkMutexErr(status);
     
     // First let's make the infinite loop
+    // in the future this 1 will be replaced with a boolean. A terminal side command will be able to take this down.
     while (1)
     {
         // Sockets will be closed by the client threads

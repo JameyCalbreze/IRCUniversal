@@ -36,7 +36,6 @@ typedef struct outboundData {
 
 typedef struct inboundData {
     pthread_t tid;
-    // This is where we put the message
     pthread_mutex_t *queueMutex;
     int socketID;
     // Incase the thread must be terminated while the message is being worked on

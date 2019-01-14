@@ -30,9 +30,6 @@
 
 #endif /* server_h */
 
-int server_main(const char* hostname,int port,int preferred);
-void* usrMngr(void* data);
-
 // We only need a mutex on the pointer as the message will be saved in the struct
 // This will have to allocate memory
 struct message {
@@ -89,3 +86,7 @@ struct chatRoom {
     
     // Perhaps I can have this abstracted to allow for user defined user types at some point.
 };
+
+int server_main(const char* hostname,int port,int preferred);
+void* usrMngr(void* data);
+int checkForCommand(struct message *first);
