@@ -28,6 +28,8 @@
 #define ERROR_DROP (-1)
 #define CLEAN_DROP 1
 
+// Config
+
 #endif /* server_h */
 
 // We only need a mutex on the pointer as the message will be saved in the struct
@@ -58,6 +60,12 @@ typedef struct client {
     struct message* cmds;
 }CData;
 
+// Linked list structure
+struct userNode {
+    CData *client;
+    struct userNode *nextClient;
+};
+
 struct chatRoom {
     // Boolean to state if the server should save the chatroom config
     pthread_mutex_t perm;
@@ -71,17 +79,17 @@ struct chatRoom {
     
     // Who is connected to the room
     pthread_mutex_t editClients;
-    struct client* clients;
+    struct userNode *clients;
     int numClients;
     
     // Who is connected to the server
-    pthread_mutex_t *editOnline;
-    struct client* online;
+    pthread_mutex_t editOnline;
+    struct userNode *online;
     int numOnline;
     
     // For future developement
     pthread_mutex_t editAdmin;
-    struct client* admins;
+    struct userNode *admins;
     int numAdmins;
     
     // Perhaps I can have this abstracted to allow for user defined user types at some point.

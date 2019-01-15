@@ -89,8 +89,14 @@ void* recvController(void* data)
         newMsg->msg = newStr;
         newMsg->msgLen = totalRecv;
         
+        // Up to this point we have allocated the necessary memory and recorded the entire message from the tcp stream.
+        // Now the message has to be placed in queue in the client thread.
+        pthread_mutex_lock(recvData->queueMutex);
+        addToMsgChain(recvData->cmdMsgQueue,newMsg);
+        pthread_mutex_unlock(recvData->queueMutex);
+        
         pthread_mutex_lock(recvData->editStatus);
-        int checkConnectionStatus = *recvData->connectionStatus;
+        checkConnectionStatus = *recvData->connectionStatus;
         pthread_mutex_unlock(recvData->editStatus);
     }
     long long convertStatus = checkConnectionStatus;
@@ -109,7 +115,6 @@ void cleanSendData(obd* sendData)
 
 void cleanRecvData(ibd* recvData)
 {
-    clearMsgChain(recvData->working);
     free(recvData);
     return;
 }
@@ -123,5 +128,19 @@ void clearMsgChain(struct message* curMsg)
         free(curMsg);
         curMsg = nxtMsg;
     }
+    return;
+}
+
+void addToMsgChain(struct message **chain, struct message *newMsg)
+{
+    if(*chain == NULL) {
+        *chain = newMsg;
+        return;
+    }
+    struct message *nextMsg = *chain;
+    while (nextMsg->nextMsg != NULL) {
+        nextMsg = nextMsg->nextMsg;
+    }
+    nextMsg->nextMsg = newMsg;
     return;
 }

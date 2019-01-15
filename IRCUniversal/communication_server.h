@@ -38,8 +38,7 @@ typedef struct inboundData {
     pthread_t tid;
     pthread_mutex_t *queueMutex;
     int socketID;
-    // Incase the thread must be terminated while the message is being worked on
-    struct message *working;
+    struct message **cmdMsgQueue;
     // How we wake up our main client thread
     pthread_cond_t *wakeClient;
     pthread_mutex_t *editStatus;
@@ -49,3 +48,4 @@ typedef struct inboundData {
 void cleanSendData(obd* sendData);
 void cleanRecvData(ibd* recvData);
 void clearMsgChain(struct message* curMsg);
+void addToMsgChain(struct message **chain, struct message *newMsg);

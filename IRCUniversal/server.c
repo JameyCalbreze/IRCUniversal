@@ -11,6 +11,43 @@
 #include "networkHelp.h"
 #include "communication_server.h"
 
+void addClientToChatRoom(struct userNode **clientList, CData *client)
+{
+    struct userNode *newNode = malloc(sizeof(struct userNode));
+    newNode->client = client;
+    newNode->nextClient = NULL;
+    if (*clientList == NULL) {
+        *clientList = newNode;
+        return;
+    }
+    struct userNode *curNode = *clientList;
+    while(curNode->nextClient != NULL) curNode = curNode->nextClient;
+    curNode->nextClient = newNode;
+    return;
+}
+
+void rmClientFromChatRoom(struct userNode **clientList,CData *client)
+{
+    struct userNode *prevNode = NULL,*curNode;
+    curNode = *clientList;
+    if(curNode->nextClient == NULL) {
+        *clientList = NULL;
+        free(curNode);
+        return;
+    } else if (curNode->client == client) {
+        *clientList = curNode->nextClient;
+        free(curNode);
+        return;
+    }
+    while(curNode->client != client) {
+        prevNode = curNode;
+        curNode = curNode->nextClient;
+    }
+    prevNode->nextClient = curNode->nextClient;
+    free(curNode);
+    return;
+}
+
 // Now we need to execute the command
 // Each command will be programmed here. It would be nice if I could load a configuration file that would allow me to save these
 // and edit them from the terminal once the server/client connection has been established.
@@ -39,10 +76,26 @@ void* usrMngr(void* data)
     // this will be the main thread for the users
     CData* userData = (CData*)data;
     int socketID = userData->socketID,status;
-    ssize_t checkSocket; // will be used to ensure that the socket between the user and the client is still valid.
+    
+    // The first thing the client must do is add themselves to the main online list
+    struct chatRoom *mainRoom = userData->curRoom->mainRoom;
+    pthread_mutex_lock(&mainRoom->editOnline);
+    addClientToChatRoom(&mainRoom->online,userData);
+    mainRoom->numOnline++;
+    pthread_mutex_unlock(&mainRoom->editOnline);
+    
+    // Second we'll add ourselves to the currentRoom
+    struct chatRoom *curRoom = userData->curRoom;
+    pthread_mutex_lock(&curRoom->editClients);
+    addClientToChatRoom(&curRoom->clients,userData);
+    curRoom->numClients++;
+    pthread_mutex_unlock(&curRoom->editClients);
     
     // We're going to use an int to mark if the client has been dropped from the server or not
     int connectionStatus = CONNECTED;
+    
+    // We need a place to store messages received be the recvData thread
+    struct message *cmdMsgQueue = NULL;
     
     // Initialize the mutex used to wake up this client thread
     pthread_mutex_t self;
@@ -65,9 +118,9 @@ void* usrMngr(void* data)
     recvData->socketID = socketID;
     recvData->queueMutex = &userData->addRmMsg;
     recvData->wakeClient = &wakeSelf;
-    recvData->working = NULL;
     recvData->editStatus = &self;
     recvData->connectionStatus = &connectionStatus;
+    recvData->cmdMsgQueue = &cmdMsgQueue;
     
     // Create threads
     status = pthread_create(&sendData->tid,NULL,sendController,(void*)sendData); checkThreadError(status);
@@ -78,7 +131,9 @@ void* usrMngr(void* data)
     // shared variable. If the status is not CONNECTED then the child threads will exit on their own
     do {
         // Begin the sequence
-        // First check for new messages
+        // Sort or distribute messages accross the current chatroom
+        
+        // Check for new messages
         pthread_mutex_lock(&userData->addRmMsg);
         if(userData->msgs != NULL) {
             pthread_mutex_lock(&sendData->queueSend);
@@ -90,26 +145,43 @@ void* usrMngr(void* data)
         pthread_mutex_unlock(&userData->addRmMsg);
         
         // Second We'll check commands
-        struct message* tempHold = NULL;
+        struct message* commandHold = NULL;
         pthread_mutex_lock(&userData->addRmCmd);
         if(userData->cmds != NULL) {
-            tempHold = userData->cmds;
+            commandHold = userData->cmds;
             userData->cmds = NULL;
         }
         pthread_mutex_unlock(&userData->addRmCmd);
         // If we've received a command we will now interpret it
-        if(tempHold != NULL){
-            int isCommand = checkForCommand(tempHold);
+        while(commandHold != NULL){
+            int isCommand = checkForCommand(commandHold);
             if(isCommand) {
                 // Place holder
-                status = executeCommand(tempHold);
-                checkCommandExecution(status,tempHold->msg);
+                status = executeCommand(commandHold);
+                checkCommandExecution(status,commandHold->msg);
             }
+            struct message *tempNext = commandHold->nextMsg;
+            free(commandHold->msg);
+            free(commandHold);
+            commandHold = tempNext;
         }
+        
         
         // This means that the receive thread will be the thread breaking out of the blocking behavior of the recv command
         pthread_cond_wait(&wakeSelf,&self);
     } while (connectionStatus == CONNECTED);
+    
+    // first we have to leave the chatroom once we are disconnecting
+    pthread_mutex_lock(&mainRoom->editOnline);
+    rmClientFromChatRoom(&mainRoom->online,userData);
+    mainRoom->numOnline--;
+    pthread_mutex_unlock(&mainRoom->editOnline);
+    
+    // Second we'll remove outselves from the currentRoom
+    pthread_mutex_lock(&curRoom->editClients);
+    rmClientFromChatRoom(&curRoom->clients,userData);
+    curRoom->numClients--;
+    pthread_mutex_unlock(&curRoom->editClients);
     
     // If we close the client first we won't have to worry about how the threads die as they should both be unblocked at a minimum
     close(socketID);
@@ -120,8 +192,13 @@ void* usrMngr(void* data)
     status = pthread_join(recvData->tid,NULL); checkThreadError(status);
     cleanSendData(sendData);
     cleanRecvData(recvData);
+    pthread_mutex_destroy(&userData->addRmCmd);
+    pthread_mutex_destroy(&userData->addRmMsg);
+    clearMsgChain(userData->cmds);
+    clearMsgChain(userData->msgs);
+    free(userData);
     
-    return NULL;
+    return (void*)connectionStatus;
 }
 
 int server_main(const char* hostname,int port, int preferred)
