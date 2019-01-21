@@ -18,8 +18,10 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-
-
+#include "sharedTypes.h"
+#include "errorCheck.h"
+#include "networkHelp.h"
+#include "communication_client.h"
 
 #endif /* client_h */
 

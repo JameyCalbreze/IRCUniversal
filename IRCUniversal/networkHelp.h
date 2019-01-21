@@ -19,6 +19,8 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-#endif /* networkHelp_h */
+ /* networkHelp_h */
 
 void setHintsForAddress(struct addrinfo *hints);
+
+#endif

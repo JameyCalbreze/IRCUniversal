@@ -7,8 +7,6 @@
 //
 
 #include "main.h"
-#include "server.h"
-#include "client.h"
 
 int main(int argc, const char * argv[]) {
     int mode = NO_MODE, port = -1, preferred = PF_INET6;

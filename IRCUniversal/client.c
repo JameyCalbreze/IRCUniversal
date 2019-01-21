@@ -7,15 +7,11 @@
 //
 
 #include "client.h"
-#include "errorCheck.h"
-#include "networkHelp.h"
-#include "communication_client.h"
 
-struct message *readMessage(void)
+Message *readMessage(void)
 {
     // Create the new message
-    struct message *newMessage = malloc(sizeof(struct message)); checkMemError(newMessage);
-    newMessage->nextMsg = NULL;
+    Message *newMessage = malloc(sizeof(Message)); checkMemError(newMessage);
     // Base message size will be 64 bytes
     char *stringMsg = malloc(64); checkMemError(stringMsg);
     memset((void*)stringMsg,0,64);
@@ -61,7 +57,7 @@ int client_main(const char* hostname, int port, int preferred)
     checkFinAddr((int*)determine);
     
     status = connect(socketID,determine->ai_addr,determine->ai_addrlen); checkConnectErr(status,__LINE__);
-    int connectionStatus = CONNECTED;
+    void *connectionStatus = CONNECTED;
     
     // Create mutex and condition for the send thread to wake the client
     // Not actually sure if I need to use this in the implementation
@@ -71,37 +67,29 @@ int client_main(const char* hostname, int port, int preferred)
     status = pthread_cond_init(&wakeClient,NULL); checkMutexErr(status);
     
     // Create the send thread
-    obd* sendData = malloc(sizeof(obd));
-    sendData->messages = NULL;
-    sendData->socketID = socketID;
-    sendData->connectionStatus = &connectionStatus;
-    sendData->editStatus = &waitMutex;
-    status = pthread_mutex_init(&sendData->queueSend, NULL); checkMutexErr(status);
-    status = pthread_cond_init(&sendData->fireOff,NULL); checkMutexErr(status);
+    // TODO
     
     // Create the recv thread
     // Currently not formatted for the client to recveive commands from the server. Will be implemented at some point.
-    ibd* recvData = malloc(sizeof(ibd));
+    Ibd* recvData = malloc(sizeof(Ibd));
     recvData->socketID = socketID;
     recvData->queueMutex = NULL;
     recvData->wakeClient = NULL;
-    recvData->working = NULL;
     recvData->connectionStatus = &connectionStatus;
     recvData->editStatus = &waitMutex;
     
     // Create threads
-    status = pthread_create(&sendData->tid, NULL, sendController, (void*)sendData); checkThreadError(status);
     status = pthread_create(&recvData->tid,NULL,recvController,(void*)recvData); checkThreadError(status);
     
     // Once the threads have been created the client must enter the equence
     do {
         // Begin the client sequence
         // First step is to read from the stdin in for a string of any size.
-        struct message *readFromConsole = readMessage();
+        Message *readFromConsole = readMessage();
         
         // Now we have the message from the console. We need to place the message in the send queue
         pthread_mutex_lock(&sendData->queueSend);
-        struct message *seekLatest = sendData->messages;
+        Message *seekLatest = sendData->messages;
         if (seekLatest == NULL) {sendData->messages = readFromConsole;}
         else {
             while (seekLatest->nextMsg != NULL) seekLatest = seekLatest->nextMsg;

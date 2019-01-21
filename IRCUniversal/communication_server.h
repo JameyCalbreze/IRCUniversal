@@ -17,35 +17,12 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include "sharedTypes.h"
+#include "server.h"
+#include "errorCheck.h"
+#include "cleanUp.h"
 
 #endif /* communication_h */
 
 void* sendController(void* data);
 void* recvController(void* data);
-
-// These threads will be autonomous workers
-typedef struct outboundData {
-    pthread_t tid;
-    pthread_mutex_t queueSend;
-    struct message* messages;
-    pthread_cond_t fireOff;
-    int socketID;
-    pthread_mutex_t *editStatus;
-    int *connectionStatus;
-} obd;
-
-typedef struct inboundData {
-    pthread_t tid;
-    pthread_mutex_t *queueMutex;
-    int socketID;
-    struct message **cmdMsgQueue;
-    // How we wake up our main client thread
-    pthread_cond_t *wakeClient;
-    pthread_mutex_t *editStatus;
-    int *connectionStatus;
-} ibd;
-
-void cleanSendData(obd* sendData);
-void cleanRecvData(ibd* recvData);
-void clearMsgChain(struct message* curMsg);
-void addToMsgChain(struct message **chain, struct message *newMsg);

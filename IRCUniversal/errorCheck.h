@@ -6,19 +6,15 @@
 //  Copyright © 2018 Jamey Calabrese. All rights reserved.
 //
 
-#ifndef error_h
-#define error_h
+#ifndef errorCheck_h
+#define errorCheck_h
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <pthread.h>
-#include <arpa/inet.h>
 #include <errno.h>
+#include "sharedTypes.h"
 
-#endif /* error_h */
 
 void checkGetAddrErr(int status, int line);
 void checkBindError(int status);
@@ -32,4 +28,6 @@ void checkMutexErr(int status);
 void checkMemError(void* pointer);
 void checkThreadError(int status);
 int checkSendError(ssize_t sent,int socketID);
-void checkCommandExecution(int status,char* messageSupplied); 
+void checkCommandExecution(int status,Message* messageSupplied);
+
+#endif /* error_h */

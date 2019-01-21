@@ -14,13 +14,13 @@
 #include <assert.h>
 #include <string.h>
 #include <pthread.h>
+#include "server.h"
+#include "client.h"
 // #include <direct.h>
 // This library is not available on macOS
-
-#endif /* main_h */
-
 #define CLIENT 0
 #define SERVER 1
 #define NO_MODE (-1)
 
+#endif /* main_h */
 
