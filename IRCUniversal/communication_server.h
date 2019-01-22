@@ -22,7 +22,7 @@
 #include "errorCheck.h"
 #include "cleanUp.h"
 
-#endif /* communication_h */
+void *sendController(void *data);
+void *recvController(void *data);
 
-void* sendController(void* data);
-void* recvController(void* data);
+#endif /* communication_h */

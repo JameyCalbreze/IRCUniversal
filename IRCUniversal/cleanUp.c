@@ -21,7 +21,7 @@ void clearMsgChain(LL *curMsg)
     return;
 }
 
-void cleanRecvData(Ibd* recvData)
+void cleanRecvData(RecvControllerData* recvData)
 {
     free(recvData);
     return;

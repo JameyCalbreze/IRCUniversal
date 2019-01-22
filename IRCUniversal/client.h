@@ -23,6 +23,6 @@
 #include "networkHelp.h"
 #include "communication_client.h"
 
-#endif /* client_h */
-
 int client_main(const char* hostname,int port,int preferred);
+
+#endif /* client_h */

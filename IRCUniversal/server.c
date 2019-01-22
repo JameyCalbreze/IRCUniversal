@@ -78,7 +78,7 @@ void* usrMngr(void* data)
     status = pthread_cond_init(&wakeSelf,NULL); checkMutexErr(status);
     
     // Second we'll make a receiving thread
-    Ibd *recvData = malloc(sizeof(Ibd));
+    RecvControllerData *recvData = malloc(sizeof(RecvControllerData));
     recvData->socketID = socketID;
     recvData->queueMutex = &userData->addRmMsg;
     recvData->wakeClient = &wakeSelf;
@@ -220,6 +220,7 @@ int server_main(const char* hostname,int port, int preferred)
         CData* userThread = malloc(sizeof(CData));
         userThread->socketID = chatSocket;
         status = pthread_mutex_init(&userThread->addRmMsg,NULL); checkMutexErr(status);
+        status = pthread_mutex_init(&userThread->preventCrossMessage,NULL); checkMutexErr(status);
         userThread->curRoom = mainRoom;
         userThread->msgs = NULL;
         userThread->usrName = NULL;

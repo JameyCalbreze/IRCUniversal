@@ -71,7 +71,7 @@ int client_main(const char* hostname, int port, int preferred)
     
     // Create the recv thread
     // Currently not formatted for the client to recveive commands from the server. Will be implemented at some point.
-    Ibd* recvData = malloc(sizeof(Ibd));
+    RecvControllerData* recvData = malloc(sizeof(recvControllerData));
     recvData->socketID = socketID;
     recvData->queueMutex = NULL;
     recvData->wakeClient = NULL;

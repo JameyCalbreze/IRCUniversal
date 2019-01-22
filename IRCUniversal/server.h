@@ -28,11 +28,9 @@
 #define PERM 1
 #define TEMP 0
 
- /* server_h */
-
 // Functions
 int server_main(const char* hostname,int port,int preferred);
 void* usrMngr(void* data);
 int checkForCommand(void *pointerToMessage);
 
-#endif
+#endif /* server_h */

@@ -8,13 +8,15 @@
 // This should be generalized to the point that both the server and the client can use these in their respective connections
 #include "communication_server.h"
 
-void* sendController(void *data) {
+// The send controller will be branched off of the main thread.
+void *sendController(void *data) {
+    SendControllerData *sendData = (SendControllerData*)data;
     return NULL;
 }
 
-void* recvController(void *data)
+void *recvController(void *data)
 {
-    Ibd* recvData = (Ibd*)data;
+    RecvControllerData* recvData = (RecvControllerData*)data;
     // Now for the server side receive contoller
     pthread_mutex_lock(recvData->editStatus);
     void *checkConnectionStatus = *recvData->connectionStatus;

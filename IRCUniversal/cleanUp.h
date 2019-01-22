@@ -14,9 +14,7 @@
 #include <unistd.h>
 #include "sharedTypes.h"
 
- /* cleanUp_h */
-
 void clearMsgChain(LL *curMsg);
-void cleanRecvData(Ibd* recvData);
+void cleanRecvData(RecvControllerData* recvData);
 
-#endif
+#endif /* cleanUp_h */

@@ -14,8 +14,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
- /* sharedTypes_h */
-
 // Connection drop codes
 #define CONNECTED 0
 #define ERROR_DROP (-1)
@@ -80,6 +78,7 @@ typedef struct client {
     char* usrName;
     
     // We need the socket the client is communicating through
+    pthread_mutex_t preventCrossMessage;
     int socketID;
     
     // Which chatroom are we connected to?
@@ -99,9 +98,15 @@ typedef struct client {
 typedef struct sendRequest {
     ChatRoom *roomForMessage;
     Message *messageToSend;
-} Sreq;
+} SendRequest;
 
-typedef struct inboundData {
+typedef struct sendControllerData {
+    pthread_mutex_t addRmSendRequests;
+    LL *sendRequests;
+    unsigned long long numRequests;
+} SendControllerData;
+
+typedef struct RecvControllerData {
     pthread_t tid;
     pthread_mutex_t *queueMutex;
     int socketID;
@@ -110,10 +115,10 @@ typedef struct inboundData {
     pthread_cond_t *wakeClient;
     pthread_mutex_t *editStatus;
     void **connectionStatus;
-} Ibd;
+} RecvControllerData;
 
 // Functions
 void addNodeToLL(void *data,LL **nodeList);
 void rmNodeFromLL(void *data, LL **nodeList);
 
-#endif
+#endif /* sharedTypes_h */

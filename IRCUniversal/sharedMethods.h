@@ -16,6 +16,6 @@
 #include "errorCheck.h"
 
 void addNodeToLL(void *data,LL **nodeList);
-void rmNodeFromLL(void *data, LL **nodeList);
+void rmNodeFromLL(void *data,LL **nodeList);
 
 #endif /* sharedMethods_h */

@@ -16,6 +16,6 @@
 #include "sharedTypes.h"
 #include "errorCheck.h"
 
-#endif /* communication_client_h */
-
 void* recvController(void *data);
+
+#endif /* communication_client_h */

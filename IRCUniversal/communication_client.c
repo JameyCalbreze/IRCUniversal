@@ -10,7 +10,7 @@
 
 void* recvController(void *data)
 {
-    Ibd* recvData = (Ibd*)data;
+    RecvControllerData* recvData = (RecvControllerData*)data;
     // Now for the server side receive contoller
     pthread_mutex_lock(recvData->editStatus);
     void *checkConnectionStatus = *recvData->connectionStatus;
